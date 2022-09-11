@@ -9,14 +9,15 @@ set(src "main.cc"
 		"addr.h" "socket.h" "tun.h"
 		"utils.h" "utils.cc"
 		"service.h" "service.cc"
-		"sudp.h" "sudp.cc")
+		"sudp.h" "sudp.cc" "poller.h"  "session_mgr.h"
+		"cipher.h" "cipher.cc")
 
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
 if(LINUX)
-	list(APPEND src "linux/socket.cc" "linux/tun.cc")
+	list(APPEND src "linux/socket.cc" "linux/tun.cc" "linux/poller.h" "linux/poller.cc")
 elseif(WIN32)
 	list(APPEND src "windows/socket.cc" "windows/tun.cc" "windows/wintun.h")
 elseif(APPLE)
@@ -31,5 +32,5 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(subtun PRIVATE Threads::Threads)
 
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL 3.0 REQUIRED)
 target_link_libraries(subtun PRIVATE OpenSSL::SSL OpenSSL::Crypto)
