@@ -41,8 +41,7 @@ static void server_net2tun(const tun_t *tun, sudp4<aes_128_cbc_cmac> *u, session
 		try {
 			size_t size = u->recvfrom(buff.get(), buff_size, client);
 			IPv4 src = parse_src_ip<IPv4>(buff.get());
-			if (!smgr->has(src))
-				smgr->put(src, client);
+			smgr->put(src, client);
 			tun_write(*tun, buff.get(), size);
 		} catch (runtime_error e) {
 			cerr << "[error] server_net2tun " << e.what() << endl;
