@@ -31,19 +31,22 @@ public:
 
 	size_t sendto(const void *buf, size_t len, const Addr &ad) {
 		std::unique_ptr<uint8_t[]> cipher_buf(new uint8_t[len + Encrypt::min_cap]);
-		uint8_t key[] = "12345612345678901";
+		uint8_t key[] = "1234561234567890";
 		size_t n = Encrypt::encrypt(key, static_cast<const uint8_t*>(buf), len, cipher_buf.get(), len + Encrypt::min_cap);
 		return send_to_udp<Addr>(m_sock, cipher_buf.get(), n, ad);
 	}
 
 	size_t recvfrom(void *buf, size_t len, Addr &ad) {
 		std::unique_ptr<uint8_t[]> cipher_buf(new uint8_t[len + Encrypt::min_cap]);
-		uint8_t key[] = "12345612345678901";
-		size_t n = Encrypt::decrypt(key, static_cast<const uint8_t *>(buf), len, cipher_buf.get(), len + Encrypt::min_cap);
-		return receive_from_udp<Addr>(m_sock, cipher_buf.get(), n, ad);
+		uint8_t key[] = "1234561234567890";
+		size_t n = receive_from_udp<Addr>(m_sock, cipher_buf.get(), len - Encrypt::min_cap, ad);
+		return Encrypt::decrypt(key, cipher_buf.get(), n, static_cast<uint8_t *>(buf), len);
 	}
-	size_t recvfrom(void *buf, size_t len) const {
-		return receive_from_udp(m_sock, buf, len);
+	size_t recvfrom(void *buf, size_t len) {
+		std::unique_ptr<uint8_t[]> cipher_buf(new uint8_t[len + Encrypt::min_cap]);
+		uint8_t key[] = "1234561234567890";
+		size_t n = receive_from_udp(m_sock, cipher_buf.get(), len - Encrypt::min_cap);
+		return Encrypt::decrypt(key, cipher_buf.get(), n, static_cast<uint8_t *>(buf), len);
 	}
 };
 

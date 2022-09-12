@@ -92,7 +92,7 @@ public:
 
 	bool has(const VIP &vip) {
 		std::lock_guard<std::mutex> guard(m_lock);
-		return m_dict.find(vip) == m_dict.end();
+		return m_dict.find(vip) != m_dict.end();
 	}
 
 	Conn get(const VIP &vip) {

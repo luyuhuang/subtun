@@ -37,10 +37,8 @@ public:
 	}
 
 	std::string to_string() const {
-		std::string ans;
-		ans.resize(12);
-		inet_ntop(AF_INET, m_data.c, ans.data(), ans.size());
-		return ans;
+		thread_local static char buf[16];
+		return inet_ntop(AF_INET, m_data.c, buf, sizeof(buf) - 1);
 	}
 
 	bool is_zero() const {
@@ -84,10 +82,8 @@ public:
 	}
 
 	std::string to_string() const {
-		std::string ans;
-		ans.resize(16);
-		inet_ntop(AF_INET6, m_data.c, ans.data(), ans.size());
-		return ans;
+		thread_local static char buf[64];
+		return inet_ntop(AF_INET6, m_data.c, buf, sizeof(buf) - 1);
 	}
 
 	bool is_zero() const {

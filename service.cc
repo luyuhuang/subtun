@@ -28,7 +28,7 @@ static void server_tun2net(const tun_t *tun, sudp4<aes_128_cbc_cmac> *u, session
 			addr_ipv4 client = smgr->get(dst);
 			u->sendto(buff.get(), size, client);
 		} catch (runtime_error e) {
-			cerr << "[error] " << e.what() << endl;
+			cerr << "[error] server_tun2net " << e.what() << endl;
 		}
 	}
 }
@@ -45,7 +45,7 @@ static void server_net2tun(const tun_t *tun, sudp4<aes_128_cbc_cmac> *u, session
 				smgr->put(src, client);
 			tun_write(*tun, buff.get(), size);
 		} catch (runtime_error e) {
-			cerr << "[error] " << e.what() << endl;
+			cerr << "[error] server_net2tun " << e.what() << endl;
 		}
 	}
 }
