@@ -32,5 +32,5 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(subtun PRIVATE Threads::Threads)
 
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL 1.1.1 REQUIRED)
 target_link_libraries(subtun PRIVATE OpenSSL::SSL OpenSSL::Crypto)
