@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "tun.h"
-#include "sudp.h"
+#include "udp.h"
 #include "utils.h"
 #include "session_mgr.h"
 #include "cipher.h"
@@ -18,7 +18,9 @@ using std::runtime_error;
 using std::cerr;
 using std::endl;
 
-static void server_tun2net(const tun_t *tun, sudp4<aes_128_gcm> *u, session_mgr<IPv4, addr_ipv4> *smgr) {
+typedef sudp4<chacha20_poly1305> udp_type;
+
+static void server_tun2net(const tun_t *tun, udp_type *u, session_mgr<IPv4, addr_ipv4> *smgr) {
 	const size_t buff_size = 4096;
 	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
 	for (;;) {
@@ -33,7 +35,7 @@ static void server_tun2net(const tun_t *tun, sudp4<aes_128_gcm> *u, session_mgr<
 	}
 }
 
-static void server_net2tun(const tun_t *tun, sudp4<aes_128_gcm> *u, session_mgr<IPv4, addr_ipv4> *smgr) {
+static void server_net2tun(const tun_t *tun, udp_type *u, session_mgr<IPv4, addr_ipv4> *smgr) {
 	const size_t buff_size = 4096;
 	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
 	addr_ipv4 client;
@@ -64,7 +66,7 @@ void start_server(const string &listen_addr) {
 	if (guess_addr_type(listen_addr) == addr_type::ipv4) {
 		session_mgr<IPv4, addr_ipv4> smgr(600);
 		addr_ipv4 ad(listen_addr);
-		sudp4<aes_128_gcm> udp(ad);
+		udp_type udp(ad);
 		thread t2n(server_tun2net, &tun, &udp, &smgr),
 			   n2t(server_net2tun, &tun, &udp, &smgr);
 
@@ -75,21 +77,29 @@ void start_server(const string &listen_addr) {
 	}
 }
 
-static void client_tun2net(const tun_t *tun, sudp4<aes_128_gcm> *u, const addr_ipv4 *server) {
+static void client_tun2net(const tun_t *tun, udp_type *u, const addr_ipv4 *server) {
 	const size_t buff_size = 4096;
 	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
 	for (;;) {
-		size_t size = tun_read(*tun, buff.get(), buff_size);
-		u->sendto(buff.get(), size, *server);
+		try {
+			size_t size = tun_read(*tun, buff.get(), buff_size);
+			u->sendto(buff.get(), size, *server);
+		} catch (runtime_error e) {
+			cerr << "[error] client_tun2net " << e.what() << endl;
+		}
 	}
 }
 
-static void client_net2tun(const tun_t *tun, sudp4<aes_128_gcm> *u) {
+static void client_net2tun(const tun_t *tun, udp_type *u) {
 	const size_t buff_size = 4096;
 	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
 	for (;;) {
-		size_t size = u->recvfrom(buff.get(), buff_size);
-		tun_write(*tun, buff.get(), size);
+		try {
+			size_t size = u->recvfrom(buff.get(), buff_size);
+			tun_write(*tun, buff.get(), size);
+		} catch (runtime_error e) {
+			cerr << "[error] client_net2tun " << e.what() << endl;
+		}
 	}
 }
 
@@ -98,7 +108,8 @@ void start_client(const string &server_addr) {
 	tun_t tun = tun_alloc(name);
 	if (guess_addr_type(server_addr) == addr_type::ipv4) {
 		addr_ipv4 ad(server_addr);
-		sudp4<aes_128_gcm> udp;
+		udp_type udp;
+		udp.connect(ad);
 		thread t2n(client_tun2net, &tun, &udp, &ad),
 			   n2t(client_net2tun, &tun, &udp);
 

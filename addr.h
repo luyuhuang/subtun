@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include <arpa/inet.h>
+#include "common.h"
 
 class IPv4 {
 	union {

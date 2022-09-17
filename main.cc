@@ -1,13 +1,21 @@
 ﻿#include <iostream>
 #include <stdexcept>
 
+#include "init.h"
 #include "service.h"
+#include "tun.h"
+#include "cipher.h"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 
+void init() {
+	init_platform();
+}
+
 int main(int argc, char **argv) {
+	init();
 	if (argc < 3) {
 		cerr << "usage: " << argv[0] << " client server_addr" << endl;
 		cerr << "       " << argv[0] << " server listen_addr" << endl;

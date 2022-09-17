@@ -22,6 +22,9 @@ size_t send_to_udp4(const socket_t &sock, const void *buf, size_t len, const add
 size_t send_to_udp6(const socket_t &sock, const void *buf, size_t len, const addr_ipv6 &ad);
 void close_udp(socket_t &sock);
 
+void connect4(const size_t &sock, const addr_ipv4 &ad);
+void connect6(const size_t &sock, const addr_ipv6 &ad);
+
 template <typename ADDR>
 inline socket_t make_udp(const ADDR &ad) = delete;
 
@@ -57,3 +60,17 @@ template <>
 inline size_t send_to_udp<addr_ipv6>(const socket_t &sock, const void *buf, size_t len, const addr_ipv6 &ad) {
 	return send_to_udp6(sock, buf, len, ad);
 }
+
+template <typename ADDR>
+inline void connect_socket(const size_t &sock, const ADDR &ad) = delete;
+
+template <>
+inline void connect_socket<addr_ipv4>(const size_t &sock, const addr_ipv4 &ad) {
+	connect4(sock, ad);
+}
+
+template <>
+inline void connect_socket<addr_ipv6>(const size_t &sock, const addr_ipv6 &ad) {
+	connect6(sock, ad);
+}
+

@@ -104,3 +104,17 @@ void close_udp(socket_t &sock) {
 	close(sock);
 	sock = socket_invalid;
 }
+
+void connect4(const size_t &sock, const addr_ipv4 &ad) {
+	struct sockaddr_in saddr{};
+	set_sockaddr_in(saddr, ad);
+	if (connect(sock, reinterpret_cast<struct sockaddr *>(&saddr), sizeof(saddr)) != 0)
+		throw runtime_error("connect4: fail to connect. err ");
+}
+
+void connect6(const size_t &sock, const addr_ipv6 &ad) {
+	struct sockaddr_in6 saddr{};
+	set_sockaddr_in6(saddr, ad);
+	if (connect(sock, reinterpret_cast<struct sockaddr *>(&saddr), sizeof(saddr)) != 0)
+		throw runtime_error("connect4: fail to connect. err ");
+}
