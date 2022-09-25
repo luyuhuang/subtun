@@ -6,7 +6,6 @@
 #if defined(_WIN32)
 	#include "windows/tun.h"
 #else
-	#define tun_openlib()
 	using tun_t = int;
 #endif
 

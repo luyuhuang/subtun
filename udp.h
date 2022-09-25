@@ -20,13 +20,13 @@ public:
 	}
 	udp &operator=(udp &&u) {
 		if (&u == this) return *this;
-		close_udp(m_sock);
+		close_socket(m_sock);
 		m_sock = u.m_sock;
 		u.m_sock = socket_invalid;
 		return *this;
 	}
 	~udp() {
-		close_udp(m_sock);
+		close_socket(m_sock);
 	}
 
 	void connect(const Addr &ad) {
@@ -34,14 +34,14 @@ public:
 	}
 
 	size_t sendto(const void *buf, size_t len, const Addr &ad) {
-		return send_to_udp<Addr>(m_sock, buf, len, ad);
+		return send_to_socket<Addr>(m_sock, buf, len, ad);
 	}
 
 	size_t recvfrom(void *buf, size_t len, Addr &ad) {
-		return receive_from_udp<Addr>(m_sock, buf, len, ad);
+		return receive_from_socket<Addr>(m_sock, buf, len, ad);
 	}
 	size_t recvfrom(void *buf, size_t len) {
-		return receive_from_udp(m_sock, buf, len);
+		return receive_from_socket(m_sock, buf, len);
 	}
 };
 

@@ -10,7 +10,7 @@ set(src "main.cc"
 		"utils.h" "utils.cc"
 		"service.h" "service.cc"
 		"udp.h" "udp.cc" "poller.h"  "session_mgr.h"
-		"cipher.h" "cipher.cc" "init.h")
+		"cipher.h" "cipher.cc" "init.h" "tcp.h" "ring_buffer.h" "ring_buffer.cc")
 
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)

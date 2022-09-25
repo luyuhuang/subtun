@@ -47,60 +47,60 @@ socket_t make_udp6(const addr_ipv6 &ad) {
 	return fd;
 }
 
-size_t receive_from_udp4(const socket_t &sock, void *buf, size_t len, addr_ipv4 &ad) {
+size_t receive_from_socket4(const socket_t &sock, void *buf, size_t len, addr_ipv4 &ad) {
 	int size;
 	char *p = reinterpret_cast<char *>(buf);
 	SOCKADDR_IN saddr {};
 	int as = sizeof(saddr);
 	if (size = recvfrom(sock, p, len, 0, reinterpret_cast<SOCKADDR *>(&saddr), &as); size < 0)
-		throw runtime_error("receive_from_udp: recvfrom returns err " + last_error_str());
-	if (saddr.sin_family != AF_INET) throw runtime_error("receive_from_udp: src is not ipv4");
+		throw runtime_error("receive_from_socket: recvfrom returns err " + last_error_str());
+	if (saddr.sin_family != AF_INET) throw runtime_error("receive_from_socket: src is not ipv4");
 	ad.set_ip(&saddr.sin_addr.s_addr);
 	ad.set_port(ntohs(saddr.sin_port));
 	return size;
 }
 
-size_t receive_from_udp6(const socket_t &sock, void *buf, size_t len, addr_ipv6 &ad) {
+size_t receive_from_socket6(const socket_t &sock, void *buf, size_t len, addr_ipv6 &ad) {
 	int size;
 	char *p = reinterpret_cast<char *>(buf);
 	SOCKADDR_IN6 saddr{};
 	int as = sizeof(saddr);
 	if (size = recvfrom(sock, p, len, 0, reinterpret_cast<SOCKADDR *>(&saddr), &as); size < 0)
-		throw runtime_error("receive_from_udp: recvfrom returns err " + last_error_str());
-	if (saddr.sin6_family != AF_INET6) throw runtime_error("receive_from_udp: src is not ipv4");
+		throw runtime_error("receive_from_socket: recvfrom returns err " + last_error_str());
+	if (saddr.sin6_family != AF_INET6) throw runtime_error("receive_from_socket: src is not ipv4");
 	ad.set_ip(&saddr.sin6_addr.s6_addr);
 	ad.set_port(ntohs(saddr.sin6_port));
 	return size;
 }
 
-size_t receive_from_udp(const socket_t &sock, void *buf, size_t len) {
+size_t receive_from_socket(const socket_t &sock, void *buf, size_t len) {
 	int size;
 	if (size = recvfrom(sock, reinterpret_cast<char *>(buf), len, 0, nullptr, nullptr); size < 0)
-		throw runtime_error("receive_from_udp: recvfrom returns err " + last_error_str());
+		throw runtime_error("receive_from_socket: recvfrom returns err " + last_error_str());
 	return size;
 }
 
-size_t send_to_udp4(const socket_t &sock, const void *buf, size_t len, const addr_ipv4 &ad) {
+size_t send_to_socket4(const socket_t &sock, const void *buf, size_t len, const addr_ipv4 &ad) {
 	int size;
 	const char *p = reinterpret_cast<const char *>(buf);
 	SOCKADDR_IN saddr{};
 	set_sockaddr_in(saddr, ad);
 	if (size = sendto(sock, p, len, 0, reinterpret_cast<SOCKADDR *>(&saddr), sizeof(saddr)); size < 0)
-		throw runtime_error("receive_from_udp: sendto returns err " + last_error_str());
+		throw runtime_error("receive_from_socket: sendto returns err " + last_error_str());
 	return size;
 }
 
-size_t send_to_udp6(const socket_t &sock, const void *buf, size_t len, const addr_ipv6 &ad) {
+size_t send_to_socket6(const socket_t &sock, const void *buf, size_t len, const addr_ipv6 &ad) {
 	int size;
 	const char *p = reinterpret_cast<const char *>(buf);
 	SOCKADDR_IN6 saddr{};
 	set_sockaddr_in6(saddr, ad);
 	if (size = sendto(sock, p, len, 0, reinterpret_cast<SOCKADDR *>(&saddr), sizeof(saddr)); size < 0)
-		throw runtime_error("receive_from_udp: sendto returns err " + last_error_str());
+		throw runtime_error("receive_from_socket: sendto returns err " + last_error_str());
 	return size;
 }
 
-void close_udp(socket_t &sock) {
+void close_socket(socket_t &sock) {
 	if (sock == socket_invalid) return;
 	closesocket(sock);
 	sock = socket_invalid;

@@ -7,6 +7,7 @@
 
 #include "tun.h"
 #include "udp.h"
+#include "tcp.h"
 #include "utils.h"
 #include "session_mgr.h"
 #include "cipher.h"
@@ -18,7 +19,7 @@ using std::runtime_error;
 using std::cerr;
 using std::endl;
 
-typedef sudp4<chacha20_poly1305> udp_type;
+typedef sudp4<chacha20_poly1305_indep> udp_type;
 
 static void server_tun2net(const tun_t *tun, udp_type *u, session_mgr<IPv4, addr_ipv4> *smgr) {
 	const size_t buff_size = 4096;

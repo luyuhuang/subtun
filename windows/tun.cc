@@ -34,7 +34,6 @@ void InitializeWintun() {
 	if (X(WintunCreateAdapter) || X(WintunCloseAdapter) || X(WintunOpenAdapter) || X(WintunGetAdapterLUID) ||
 		X(WintunGetRunningDriverVersion) || X(WintunDeleteDriver) || X(WintunSetLogger) || X(WintunStartSession) ||
 		X(WintunEndSession) || X(WintunGetReadWaitEvent) || X(WintunReceivePacket) || X(WintunReleaseReceivePacket) ||
-		X(WintunEndSession) || X(WintunGetReadWaitEvent) || X(WintunReceivePacket) || X(WintunReleaseReceivePacket) ||
 		X(WintunAllocateSendPacket) || X(WintunSendPacket))
 #undef X
 	{
@@ -48,7 +47,15 @@ tun_t tun_alloc(std::string &name) {
 	if (name.size() > MAX_ADAPTER_NAME)
 		throw runtime_error("name is too long");
 	std::wstring wname(name.begin(), name.end());
-	auto adapter = WintunCreateAdapter(wname.c_str(), L"Wintun", nullptr);
+
+	// af2643d2-0026-416a-a305-d634f3b26232
+	GUID guid = {
+		0xaf2643d2,
+		0x0026,
+		0x416a,
+		{0xa3, 0x05, 0xd6, 0x34, 0xf3, 0xb2, 0x62, 0x32},
+	};
+	auto adapter = WintunCreateAdapter(wname.c_str(), L"Wintun", &guid);
 	if (!adapter)
 		throw runtime_error("fail to create an adapter: " + last_error_str());
 	auto session = WintunStartSession(adapter, 0x400000);
@@ -77,6 +84,7 @@ size_t tun_write(const tun_t &tun, const void *buf, size_t len) {
 	if (packet) {
 		memcpy(packet, buf, len);
 		WintunSendPacket(tun.session, packet);
+		return len;
 	} else if (auto e = GetLastError(); e != ERROR_BUFFER_OVERFLOW)
 		throw runtime_error("fail to write to the tun: " + last_error_str(e));
 }
