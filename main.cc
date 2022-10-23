@@ -2,7 +2,8 @@
 #include <stdexcept>
 
 #include "init.h"
-#include "service.h"
+#include "server.h"
+#include "client.h"
 #include "tun.h"
 #include "cipher.h"
 

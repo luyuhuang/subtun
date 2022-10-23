@@ -19,7 +19,7 @@ class session_mgr {
 	struct entry : node {
 		template <typename VIP_, typename Conn_>
 		entry(VIP_ &&vip_, Conn_ &&conn_, time_type t_)
-			: vip(vip_), conn(conn_), t(t_) {
+			: vip(std::forward<VIP_>(vip_)), conn(std::forward<Conn_>(conn_)), t(t_) {
 		}
 		VIP vip;
 		Conn conn;

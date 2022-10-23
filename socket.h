@@ -3,6 +3,7 @@
 #include <cstddef>
 
 #include "addr.h"
+#include "utils.h"
 
 #if defined (_WIN32)
 	#include <winsock2.h>
@@ -111,30 +112,4 @@ inline socket_t accept_tcp<addr_ipv6>(const socket_t &sock, addr_ipv6 &ad) {
 	return accept_tcp6(sock, ad);
 };
 
-
-class socket_obj {
-	socket_t m_sock;
-public:
-	socket_obj() : m_sock(socket_invalid) {}
-	socket_obj(const socket_t &sock) : m_sock(sock) {}
-	socket_obj(const socket_obj &) = delete;
-	socket_obj &operator=(const socket_obj &) = delete;
-
-	socket_obj(socket_obj &&o) : m_sock(o.m_sock) {
-		o.m_sock = socket_invalid;
-	}
-	socket_obj &operator=(socket_obj &&o) {
-		if (&o == this) return *this;
-		close_socket(m_sock);
-		m_sock = o.m_sock;
-		o.m_sock = socket_invalid;
-		return *this;
-	}
-	~socket_obj() {
-		close_socket(m_sock);
-	}
-
-	operator socket_t() const {
-		return m_sock;
-	}
-};
+using socket_obj = movable_fd<socket_t, decltype(close_socket), close_socket, -1>;

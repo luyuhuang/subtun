@@ -64,6 +64,7 @@ template <typename Aead>
 struct aead_iter : public Aead {
 	static const size_t min_cap = Aead::tag_size + Aead::padding_size;
 
+	aead_iter() = default;
 	aead_iter(const aead_iter &a) : m_enc_iv(BN_dup(a.m_enc_iv)), m_dec_iv(BN_dup(a.m_dec_iv)) {
 		memcpy(m_key, a.m_key, Aead::key_size);
 	}

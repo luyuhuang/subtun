@@ -129,3 +129,21 @@ void ring_buffer::poll(uint8_t *data, size_t len) {
 		m_front += len;
 	}
 }
+
+size_t ring_buffer::poll(const std::function<size_t(const void *buf, size_t len)> &f) {
+	if (m_front == m_back) return 0;
+	if (m_front < m_back) {
+		size_t n = f(m_front, m_back - m_front);
+		m_front += n;
+		return n;
+	} else { // m_front > m_back
+		size_t n = f(m_front, m_last - m_front);
+		if ((m_front += n) == m_last) {
+			m_front = m_base;
+			size_t m = f(m_front, m_back - m_front);
+			m_front += m;
+			n += m;
+		}
+		return n;
+	}
+}

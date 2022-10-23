@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for subtun, include source and define
+# CMakeList.txt : CMake project for subtun, include source and define
 # project specific logic here.
 #
 cmake_minimum_required(VERSION 3.8)
@@ -8,8 +8,9 @@ project("subtun")
 set(src "main.cc"
 		"addr.h" "socket.h" "tun.h"
 		"utils.h" "utils.cc"
-		"service.h" "service.cc"
-		"udp.h" "udp.cc" "poller.h"  "session_mgr.h"
+		"client.h" "client.cc"
+		"server.h" "server.cc"
+		"udp.h" "udp.cc" "poller.h" "session_mgr.h"
 		"cipher.h" "cipher.cc" "init.h" "tcp.h" "ring_buffer.h" "ring_buffer.cc")
 
 if(UNIX AND NOT APPLE)
@@ -17,7 +18,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 if(LINUX)
-	list(APPEND src "linux/socket.cc" "linux/tun.cc" "linux/poller.h" "linux/poller.cc" "linux/init.cc")
+	list(APPEND src "linux/socket.cc" "linux/tun.cc" "linux/epoll.h" "linux/init.cc")
 elseif(WIN32)
 	list(APPEND src "windows/socket.cc" "windows/tun.cc" "windows/tun.h" "windows/wintun.h" "windows/err.h" "windows/init.cc")
 elseif(APPLE)

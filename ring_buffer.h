@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
 
 class ring_buffer;
 
@@ -113,6 +114,7 @@ public:
 
 	void append(const uint8_t *data, size_t len);
 	void poll(uint8_t *data, size_t len);
+	size_t poll(const std::function<size_t(const void *buf, size_t len)> &f);
 
 private:
 	void free();

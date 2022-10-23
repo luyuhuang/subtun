@@ -1,3 +1,5 @@
+#include "server.h"
+
 #include <thread>
 #include <string>
 #include <memory>
@@ -8,6 +10,7 @@
 #include "tun.h"
 #include "udp.h"
 #include "tcp.h"
+#include "poller.h"
 #include "utils.h"
 #include "session_mgr.h"
 #include "cipher.h"
@@ -61,7 +64,7 @@ static void update_session_mgr(Mgr &mgr) {
 	}
 }
 
-void start_server(const string &listen_addr) {
+static void start_udp(const string &listen_addr) {
 	string name = "subtun";
 	tun_t tun = tun_alloc(name);
 	if (guess_addr_type(listen_addr) == addr_type::ipv4) {
@@ -78,44 +81,35 @@ void start_server(const string &listen_addr) {
 	}
 }
 
-static void client_tun2net(const tun_t *tun, udp_type *u, const addr_ipv4 *server) {
-	const size_t buff_size = 4096;
-	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
-	for (;;) {
-		try {
-			size_t size = tun_read(*tun, buff.get(), buff_size);
-			u->sendto(buff.get(), size, *server);
-		} catch (runtime_error e) {
-			cerr << "[error] client_tun2net " << e.what() << endl;
-		}
-	}
+typedef stcp4_conn<chacha20_poly1305_iter> tcp_type;
+
+static bool on_writable(tcp_type &conn) {
+	return conn.on_writable();
 }
 
-static void client_net2tun(const tun_t *tun, udp_type *u) {
-	const size_t buff_size = 4096;
-	unique_ptr<uint8_t[]> buff(new uint8_t[buff_size]);
-	for (;;) {
-		try {
-			size_t size = u->recvfrom(buff.get(), buff_size);
-			tun_write(*tun, buff.get(), size);
-		} catch (runtime_error e) {
-			cerr << "[error] client_net2tun " << e.what() << endl;
-		}
-	}
-}
-
-void start_client(const string &server_addr) {
+static void start_tcp(const string &listen_addr) {
 	string name = "subtun";
 	tun_t tun = tun_alloc(name);
-	if (guess_addr_type(server_addr) == addr_type::ipv4) {
-		addr_ipv4 ad(server_addr);
-		udp_type udp;
-		udp.connect(ad);
-		thread t2n(client_tun2net, &tun, &udp, &ad),
-			   n2t(client_net2tun, &tun, &udp);
+	if (guess_addr_type(listen_addr) == addr_type::ipv4) {
+		session_mgr<IPv4, tcp_type> smgr(600);
+		addr_ipv4 ad(listen_addr);
 
-		t2n.join(), n2t.join();
+		event_poller<tcp_type, on_writable> loop;
+
+		tcp4_listener listener(ad);
+		listener.listen();
+
+		for (;;) {
+			auto plain_conn = listener.accept();
+			uint8_t key[] = "12345612345678901234561234567890";
+			tcp_type conn(std::move(plain_conn), key);
+			loop.add(conn.get_socket(), std::move(conn));
+		}
 	} else {
-		throw runtime_error("unknow ip address format `" + server_addr + "'");
+		throw runtime_error("unknow ip address format `" + listen_addr + "'");
 	}
+}
+
+void start_server(const std::string &listen_addr) {
+    start_udp(listen_addr);
 }
